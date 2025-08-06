@@ -15,6 +15,9 @@ export class Users {
   @Column({ nullable: true })
   age?: number;
 
+  @Column({ length: 50 })
+  role: string;
+
   @Column({ default: true })
   isActive: boolean;
 }
