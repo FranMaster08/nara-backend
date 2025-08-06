@@ -19,7 +19,9 @@ COPY package*.json ./
 COPY --from=builder /app/dist ./dist
 
 RUN npm install --production --legacy-peer-deps
+# Instalar tsconfig-paths para registrar rutas de TypeScript
+RUN npm install tsconfig-paths --legacy-peer-deps
 
 ENV NODE_ENV=production
 
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource ormconfig.ts migration:run && node dist/main.js"]

@@ -17,6 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         password: config.get<string>('DB_PASS'),
         database: config.get<string>('DB_NAME'),
         entities: [__dirname + '/../**/*.entity.{ts,js}'],
+        migrations: ['src/migrations/*.ts'],
         synchronize: true, // Solo para desarrollo
         // Opciones de pool de conexiones
         extra: {
@@ -32,7 +33,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 export class DatabaseModule implements OnModuleInit {
   private readonly logger = new Logger(DatabaseModule.name);
 
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource) { }
 
   onModuleInit() {
     if (this.dataSource.isInitialized) {
