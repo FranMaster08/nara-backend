@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AllChanges1754481720312 implements MigrationInterface {
-    name = 'AllChanges1754481720312'
+export class AddNickname1754484149230 implements MigrationInterface {
+    name = 'AddNickname1754484149230'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -12,6 +12,7 @@ export class AllChanges1754481720312 implements MigrationInterface {
                 "age" integer,
                 "role" character varying(50) NOT NULL,
                 "isActive" boolean NOT NULL DEFAULT true,
+                "nuevoCampo" character varying,
                 CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"),
                 CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id")
             )

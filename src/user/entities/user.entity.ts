@@ -20,4 +20,7 @@ export class Users {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ nullable: true })
+  nuevoCampo?: string;
 }

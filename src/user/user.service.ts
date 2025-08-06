@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { Users } from './entities/user.entity';
 import { UserResponseDto } from './dto-responses/user-response.dto';
 
 @Injectable()
@@ -11,8 +11,8 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
 
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Users)
+    private readonly userRepository: Repository<Users>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
@@ -65,7 +65,7 @@ export class UserService {
     this.logger.log(`Usuario eliminado: ${user.email}`);
   }
 
-  private toResponseDto(user: User): UserResponseDto {
+  private toResponseDto(user: Users): UserResponseDto {
     const { id, name, email, age } = user;
     return { id, name, email, age };
   }

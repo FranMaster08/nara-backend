@@ -18,7 +18,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         database: config.get<string>('DB_NAME'),
         entities: [__dirname + '/../**/*.entity.{ts,js}'],
         migrations: ['src/migrations/*.ts'],
-        synchronize: true, // Solo para desarrollo
+        synchronize: false, // Solo para desarrollo
         // Opciones de pool de conexiones
         extra: {
           // Número máximo de conexiones en el pool

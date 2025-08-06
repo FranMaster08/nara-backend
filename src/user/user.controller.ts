@@ -11,7 +11,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { Users } from './entities/user.entity';
 import { UserResponseDto } from './dto-responses/user-response.dto';
 
 @ApiTags('Usuarios')
