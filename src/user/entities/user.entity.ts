@@ -21,4 +21,11 @@ export class Users {
   @Column({ default: true })
   isActive: boolean;
 
+
+  @Column({ default: true })
+  create_at: boolean;
+
+  @Column({ default: true })
+  update_at: boolean;
+
 }
