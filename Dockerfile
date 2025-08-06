@@ -18,7 +18,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY --from=builder /app/dist ./dist
 
-RUN npm install --production --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 # Instalar tsconfig-paths para registrar rutas de TypeScript
 RUN npm install tsconfig-paths --legacy-peer-deps
 

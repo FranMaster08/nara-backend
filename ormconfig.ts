@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { DataSource } from 'typeorm';
-import { Users } from './src/user/entities/user.entity'; // <-- o importa todos desde algún índice
 
 export default new DataSource({
   type: 'postgres',
