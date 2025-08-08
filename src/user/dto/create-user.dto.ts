@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsInt, Min } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsInt, Min, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -30,4 +30,45 @@ export class CreateUserDto {
   @IsInt()
   @Min(0)
   age?: number;
+
+
+  @ApiProperty({
+    description: 'ROL del usuario',
+    example: 'ADMIN',
+  })
+  @IsString()
+  role: string;
+
+  @ApiProperty({
+    description: 'Id del tipo de documento del usuario',
+    example: '1',
+  })
+  @IsNumber()
+  documenTypeId: number;
+
+
+  @ApiProperty({
+    description: 'documento del usuario',
+    example: '11564612',
+  })
+  @IsString()
+  documenNumber: string;
+
+
+  @ApiProperty({
+    description: 'telefono del usuario',
+    example: '11564612',
+  })
+  @IsString()
+  cellphone: string;
+
+
+  @ApiProperty({
+    description: 'direccion del usuario',
+    example: 'calle 123 #45-67',
+  })
+  @IsString()
+  address: string;
+
+
 }

@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY tsconfig*.json ./
+COPY ormconfig*.ts ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
@@ -16,6 +17,7 @@ FROM node:20-alpine AS production
 WORKDIR /app
 
 COPY package*.json ./
+COPY ormconfig.ts ./
 COPY --from=builder /app/dist ./dist
 
 RUN npm install --legacy-peer-deps
@@ -23,5 +25,4 @@ RUN npm install --legacy-peer-deps
 RUN npm install tsconfig-paths --legacy-peer-deps
 
 ENV NODE_ENV=production
-
-CMD ["sh", "-c", "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource ormconfig.ts migration:run && node dist/main.js"]
+CMD ["sh", "-c", "node dist/src/main.js"]

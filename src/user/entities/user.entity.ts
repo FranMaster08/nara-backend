@@ -18,14 +18,27 @@ export class Users {
   @Column({ length: 50 })
   role: string;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column()
+  documenTypeId: number;
 
+
+  @Column({ length: 20 })
+  documenNumber: string;
+
+
+  @Column({ length: 14 })
+  cellphone: string;
+
+  @Column({ length: 100 })
+  address: string;
 
   @Column({ default: true })
   create_at: boolean;
 
   @Column({ default: true })
   update_at: boolean;
+
+  @Column({ default: true })
+  isActive: boolean;
 
 }
