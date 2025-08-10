@@ -17,7 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         password: config.get<string>('DB_PASS'),
         database: config.get<string>('DB_NAME'),
         entities: [__dirname + '/../**/*.entity.{ts,js}'],
-        migrations: ['src/migrations/*.ts'],
+        // migrations: ['src/migrations/*.ts'],
         synchronize: false, // Solo para desarrollo
         // Opciones de pool de conexiones
         extra: {

@@ -10,6 +10,10 @@ export class UserResponseDto {
   @ApiProperty({ example: 'juan.perez@email.com', description: 'Correo electrónico del usuario' })
   email: string;
 
-  @ApiProperty({ example: 30, description: 'Edad del usuario', required: false })
-  age?: number;
+  @ApiProperty({ example: 30, description: 'Fecha de nacimiento del usuario'})
+  birthDate?: Date;
+
+  @ApiProperty({ example: 'beneficiario', description: 'Rol del usuario' })
+  rol: string;
+
 }

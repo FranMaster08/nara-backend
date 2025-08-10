@@ -1,44 +1,58 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity()
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Check,
+  Index,
+} from 'typeorm';
+import { Role } from '../../shared/enums/roles/role.enum';
+
+@Entity({ name: 'users' })
+@Check(`"birth_date" IS NULL OR "birth_date" <= CURRENT_DATE`)
 export class Users {
-
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 100 })
-  name: string;
+  @Column({ length: 100 , nullable: true })
+  name?: string;
 
+  @Column({ length: 100 })
+  lastName: string;
+
+  @Index({ unique: true })
   @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: true })
-  age?: number;
+  @Column({ name: 'birth_date', type: 'date', nullable: true })
+  birthDate?: Date | null;
 
-  @Column({ length: 50 })
-  role: string;
+  @Column({ type: 'enum', enum: Role, default: Role.User })
+  role: Role;
 
-  @Column()
-  documenTypeId: number;
+  @Column({ type: 'int' })
+  documentTypeId: number;
 
+  @Column({ length: 32 })
+  documentNumber: string;
 
-  @Column({ length: 20 })
-  documenNumber: string;
-
-
-  @Column({ length: 14 })
+  @Column({ length: 32 })
   cellphone: string;
 
-  @Column({ length: 100 })
+  @Column({ length: 160 })
   address: string;
 
-  @Column({ default: true })
-  create_at: boolean;
+  @Column({ name: 'passwordHash', length: 72 })
+  password: string;
 
-  @Column({ default: true })
-  update_at: boolean;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 
-  @Column({ default: true })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt: Date;
+
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
-
 }
