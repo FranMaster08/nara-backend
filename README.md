@@ -21,11 +21,20 @@ Este backend está desarrollado con **NestJS** y **TypeORM**, usando **PostgreSQ
 
 3. **Configura las variables de entorno en un archivo `.env`:**
   ```
-  DB_HOST=localhost
-  DB_PORT=5432
-  DB_USER=tu_usuario
-  DB_PASS=tu_contraseña
-  DB_NAME=nara_db
+ PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=tu_usuario
+DB_PASS=tu_password
+DB_NAME=tu_basededatos
+
+# Opcional: configuración de pool
+DB_POOL_MAX=10
+DB_IDLE_TIMEOUT=30000
+JWT_SECRET=super_secret
+JWT_EXPIRES=1d
+LOG_LEVEL=error
   ```
 
 4. **Ejecuta migraciones:**
