@@ -10,6 +10,10 @@ import { JwtAuthGuard } from './shared/guards/jwt/jwt.guard';
 import { RolesGuard } from './shared/guards/roles/roles.guard';
 import { LoggingModule } from './logging/logging.module';
 import { JwtAuthModule } from './jwt/jwt.module';
+import { PuntosVentaModule } from './puntos-venta/puntos-venta.module';
+import { ProductosModule } from './productos/productos.module';
+import { PedidosModule } from './pedidos/pedidos.module';
+import { OperadorPdvModule } from './operador-pdv/operador-pdv.module';
 
 
 
@@ -22,7 +26,11 @@ import { JwtAuthModule } from './jwt/jwt.module';
     UserModule,
     AuthModule,
     LoggingModule,
-    JwtAuthModule, // Import JWT module for authentication
+    JwtAuthModule,
+    PuntosVentaModule,
+    ProductosModule,
+    PedidosModule,
+    OperadorPdvModule, // Import JWT module for authentication
   ],
   controllers: [AppController],
   providers: [
