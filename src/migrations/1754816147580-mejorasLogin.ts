@@ -46,13 +46,7 @@ export class MejorasLogin1754816147580 implements MigrationInterface {
     await queryRunner.query(`
             ALTER TABLE "users" DROP COLUMN "role"
         `);
-    await queryRunner.query(`
-            CREATE TYPE "public"."users_role_enum" AS ENUM('user', 'admin')
-        `);
-    await queryRunner.query(`
-            ALTER TABLE "users"
-            ADD "role" "public"."users_role_enum" NOT NULL DEFAULT 'user'
-        `);
+
     await queryRunner.query(`
             ALTER TABLE "users" DROP COLUMN "cellphone"
         `);

@@ -23,12 +23,13 @@ import { OperadorPdvModule } from './operador-pdv/operador-pdv.module';
     DatabaseModule,
     UserModule,
     AuthModule,
-    LoggingModule,
+
     JwtAuthModule,
     PuntosVentaModule,
     ProductosModule,
     PedidosModule,
     OperadorPdvModule, // Import JWT module for authentication
+        LoggingModule
   ],
   controllers: [AppController],
   providers: [
