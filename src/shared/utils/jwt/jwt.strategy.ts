@@ -16,7 +16,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(req: any, payload: { sub: string; email: string; role: Role }) {
+  async validate(
+    req: any,
+    payload: { sub: string; email: string; role: Role },
+  ) {
     const auth = req.headers?.authorization as string | undefined;
     const token = auth?.startsWith('Bearer ') ? auth.slice(7) : undefined;
     // lo que retornes aquí será req.user

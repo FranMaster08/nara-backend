@@ -33,7 +33,10 @@ export class UserService {
     const traceId = this.newTraceId();
     const { password, ...safeDto } = createUserDto as any;
 
-    this.logger.info({ traceId, email: safeDto?.email }, 'Create user: attempt');
+    this.logger.info(
+      { traceId, email: safeDto?.email },
+      'Create user: attempt',
+    );
 
     try {
       let hashedPassword: string | undefined;
@@ -52,32 +55,52 @@ export class UserService {
 
       await this.userRepository.save(user);
 
-      this.logger.info({ traceId, userId: user.id, email: user.email }, 'Create user: success');
+      this.logger.info(
+        { traceId, userId: user.id, email: user.email },
+        'Create user: success',
+      );
       return this.toResponseDto(user);
     } catch (err: any) {
       if (err?.code === '23505') {
-        this.logger.warn({ traceId, err: err?.detail }, 'Create user: conflict (unique violation)');
-        throw new ConflictException({ message: 'El usuario ya existe', traceId });
+        this.logger.warn(
+          { traceId, err: err?.detail },
+          'Create user: conflict (unique violation)',
+        );
+        throw new ConflictException({
+          message: 'El usuario ya existe',
+          traceId,
+        });
       }
       this.logger.error({ traceId, err }, 'Create user: unexpected error');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
   /** ⚠️ Uso interno de Auth: devuelve ENTIDAD por email. Con withPassword=true añade passwordHash */
-  async findByEmail(email: string, withPassword = false): Promise<Users | null> {
+  async findByEmail(
+    email: string,
+    withPassword = false,
+  ): Promise<Users | null> {
     const traceId = this.newTraceId();
     this.logger.debug({ traceId, email }, 'Find by email (entity)');
 
     try {
-      const qb = this.userRepository.createQueryBuilder('u').where('u.email = :email', { email });
+      const qb = this.userRepository
+        .createQueryBuilder('u')
+        .where('u.email = :email', { email });
       if (withPassword) qb.addSelect('u.passwordHash'); // porque select:false en la entidad
       const user = await qb.getOne();
       this.logger.info({ traceId, found: !!user }, 'Find by email: done');
       return user ?? null;
     } catch (err: any) {
       this.logger.error({ traceId, err }, 'Find by email: unexpected error');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
@@ -99,7 +122,22 @@ export class UserService {
     } = query;
 
     this.logger.debug(
-      { traceId, filters: { name, email, role, isActive, birthDateFrom, birthDateTo, documentTypeId, page, limit, sortBy, order } },
+      {
+        traceId,
+        filters: {
+          name,
+          email,
+          role,
+          isActive,
+          birthDateFrom,
+          birthDateTo,
+          documentTypeId,
+          page,
+          limit,
+          sortBy,
+          order,
+        },
+      },
       'Find all users: start',
     );
 
@@ -109,10 +147,14 @@ export class UserService {
       if (name) qb.andWhere('u.name ILIKE :name', { name: `%${name}%` });
       if (email) qb.andWhere('u.email ILIKE :email', { email: `%${email}%` });
       if (role) qb.andWhere('u.role = :role', { role });
-      if (typeof isActive === 'boolean') qb.andWhere('u.isActive = :isActive', { isActive });
-      if (documentTypeId) qb.andWhere('u.documentTypeId = :documentTypeId', { documentTypeId });
-      if (birthDateFrom) qb.andWhere('u.birthDate >= :birthDateFrom', { birthDateFrom });
-      if (birthDateTo) qb.andWhere('u.birthDate <= :birthDateTo', { birthDateTo });
+      if (typeof isActive === 'boolean')
+        qb.andWhere('u.isActive = :isActive', { isActive });
+      if (documentTypeId)
+        qb.andWhere('u.documentTypeId = :documentTypeId', { documentTypeId });
+      if (birthDateFrom)
+        qb.andWhere('u.birthDate >= :birthDateFrom', { birthDateFrom });
+      if (birthDateTo)
+        qb.andWhere('u.birthDate <= :birthDateTo', { birthDateTo });
 
       const sortable = new Set(['name', 'email', 'createdAt', 'birthDate']);
       const sortField = sortable.has(sortBy) ? sortBy : 'createdAt';
@@ -123,11 +165,17 @@ export class UserService {
 
       const users = await qb.getMany();
 
-      this.logger.info({ traceId, count: users.length }, 'Find all users: success');
+      this.logger.info(
+        { traceId, count: users.length },
+        'Find all users: success',
+      );
       return users.map((u) => this.toResponseDto(u));
     } catch (err: any) {
       this.logger.error({ traceId, err }, 'Find all users: unexpected error');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
@@ -136,31 +184,50 @@ export class UserService {
     this.logger.debug({ traceId, id }, 'Find one user: start');
 
     try {
-      const user = await this.userRepository.findOne({ where: { id } });
+      const user = await this.userRepository.findOne({
+        where: { id: id.toString() },
+      });
       if (!user) {
         this.logger.warn({ traceId, id }, 'Find one user: not found');
-        throw new NotFoundException({ message: `Usuario con id ${id} no encontrado`, traceId });
+        throw new NotFoundException({
+          message: `Usuario con id ${id} no encontrado`,
+          traceId,
+        });
       }
       this.logger.info({ traceId, userId: user.id }, 'Find one user: success');
       return this.toResponseDto(user);
     } catch (err: any) {
       if (err?.getStatus) throw err;
       this.logger.error({ traceId, err }, 'Find one user: unexpected error');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
     const traceId = this.newTraceId();
     const { password, ...rest } = updateUserDto as any;
 
-    this.logger.info({ traceId, id, fields: Object.keys(rest) }, 'Update user: attempt');
+    this.logger.info(
+      { traceId, id, fields: Object.keys(rest) },
+      'Update user: attempt',
+    );
 
     try {
-      const user = await this.userRepository.findOne({ where: { id } });
+      const user = await this.userRepository.findOne({
+        where: { id: id.toString() },
+      });
       if (!user) {
         this.logger.warn({ traceId, id }, 'Update user: not found');
-        throw new NotFoundException({ message: `Usuario con id ${id} no encontrado`, traceId });
+        throw new NotFoundException({
+          message: `Usuario con id ${id} no encontrado`,
+          traceId,
+        });
       }
 
       Object.assign(user, rest);
@@ -179,12 +246,21 @@ export class UserService {
       return this.toResponseDto(user);
     } catch (err: any) {
       if (err?.code === '23505') {
-        this.logger.warn({ traceId, err: err?.detail }, 'Update user: conflict (unique violation)');
-        throw new ConflictException({ message: 'Datos en conflicto (únicos)', traceId });
+        this.logger.warn(
+          { traceId, err: err?.detail },
+          'Update user: conflict (unique violation)',
+        );
+        throw new ConflictException({
+          message: 'Datos en conflicto (únicos)',
+          traceId,
+        });
       }
       if (err?.getStatus) throw err;
       this.logger.error({ traceId, err }, 'Update user: unexpected error');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
@@ -193,10 +269,15 @@ export class UserService {
     this.logger.info({ traceId, id }, 'Remove user: attempt');
 
     try {
-      const user = await this.userRepository.findOne({ where: { id } });
+      const user = await this.userRepository.findOne({
+        where: { id: id.toString() },
+      });
       if (!user) {
         this.logger.warn({ traceId, id }, 'Remove user: not found');
-        throw new NotFoundException({ message: `Usuario con id ${id} no encontrado`, traceId });
+        throw new NotFoundException({
+          message: `Usuario con id ${id} no encontrado`,
+          traceId,
+        });
       }
 
       await this.userRepository.remove(user);
@@ -204,12 +285,21 @@ export class UserService {
     } catch (err: any) {
       if (err?.getStatus) throw err;
       this.logger.error({ traceId, err }, 'Remove user: unexpected error');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
   private toResponseDto(user: Users): UserResponseDto {
     const { id, name, email, birthDate, role } = user;
-    return { id, name, email, birthDate , rol: role ? String(role).toLowerCase() : 'user' };
+    return {
+      id: id.toString(),
+      name,
+      email,
+      birthDate: birthDate,
+      rol: role ? String(role).toLowerCase() : 'user',
+    };
   }
 }

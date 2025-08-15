@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { OperadorPdvService } from './operador-pdv.service';
 import { CreateOperadorPdvDto } from './dto/create-operador-pdv.dto';
 import { UpdateOperadorPdvDto } from './dto/update-operador-pdv.dto';
@@ -23,7 +31,10 @@ export class OperadorPdvController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOperadorPdvDto: UpdateOperadorPdvDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateOperadorPdvDto: UpdateOperadorPdvDto,
+  ) {
     return this.operadorPdvService.update(+id, updateOperadorPdvDto);
   }
 

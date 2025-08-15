@@ -1,10 +1,18 @@
 // src/shared/guards/roles/roles.guard.ts
-import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { randomUUID } from 'crypto';
 
-import { IS_PUBLIC_KEY, ROLES_KEY } from '../../decorators/roles/roles.decorator';
+import {
+  IS_PUBLIC_KEY,
+  ROLES_KEY,
+} from '../../decorators/roles/roles.decorator';
 
 import { Role } from '../../enums/roles/role.enum';
 
@@ -24,11 +32,17 @@ export class RolesGuard implements CanActivate {
     const klass = ctx.getClass();
 
     // Rutas públicas saltan RBAC
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [handler, klass]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      handler,
+      klass,
+    ]);
     if (isPublic) return true;
 
     // Roles requeridos
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [handler, klass]);
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      handler,
+      klass,
+    ]);
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
     const req = ctx.switchToHttp().getRequest();
@@ -36,7 +50,7 @@ export class RolesGuard implements CanActivate {
     const user = req.user as UserLike | undefined;
 
     // ✅ Normaliza roles del usuario correctamente
-    const userRoles: string=  (user.role as string).toLowerCase() ; 
+    const userRoles: string = (user.role as string).toLowerCase();
 
     const allowed = requiredRoles.map((r) => String(r).toLowerCase());
     const hasAccess = [userRoles].some((r) => allowed.includes(r));
@@ -58,7 +72,10 @@ export class RolesGuard implements CanActivate {
         'RBAC denied',
       );
 
-      throw new ForbiddenException({ message: 'Sin permisos para acceder a este recurso', traceId });
+      throw new ForbiddenException({
+        message: 'Sin permisos para acceder a este recurso',
+        traceId,
+      });
     }
 
     this.logger.debug(

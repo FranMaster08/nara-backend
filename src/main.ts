@@ -7,11 +7,13 @@ import { TraceIdInterceptor } from './shared/interceptors/trace-id.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe({
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
   app.useGlobalInterceptors(new TraceIdInterceptor());
   // main.ts
@@ -19,7 +21,10 @@ async function bootstrap() {
     .setTitle('NARA API')
     .setDescription('...')
     .setVersion('1.0.0')
-    .addServer(`http://localhost:${process.env.PORT ?? 3000}`, 'Desarrollo Local')
+    .addServer(
+      `http://localhost:${process.env.PORT ?? 3000}`,
+      'Desarrollo Local',
+    )
     .addServer('https://api.nara.example.com', 'Servidor de Producción')
     .addBearerAuth(
       {
@@ -35,7 +40,9 @@ async function bootstrap() {
     .addSecurityRequirements('bearer')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config, { deepScanRoutes: true });
+  const document = SwaggerModule.createDocument(app, config, {
+    deepScanRoutes: true,
+  });
   SwaggerModule.setup('api-docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true, // recuerda el token entre refresh

@@ -24,7 +24,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           // Número máximo de conexiones en el pool
           max: parseInt(config.get<string>('DB_POOL_MAX', '10')),
           // Tiempo que una conexión puede estar inactiva antes de cerrarse (en ms)
-          idleTimeoutMillis: parseInt(config.get<string>('DB_IDLE_TIMEOUT', '30000')),
+          idleTimeoutMillis: parseInt(
+            config.get<string>('DB_IDLE_TIMEOUT', '30000'),
+          ),
         },
       }),
     }),
@@ -33,7 +35,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 export class DatabaseModule implements OnModuleInit {
   private readonly logger = new Logger(DatabaseModule.name);
 
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(private readonly dataSource: DataSource) {}
 
   onModuleInit() {
     if (this.dataSource.isInitialized) {

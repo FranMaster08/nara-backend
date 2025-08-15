@@ -15,8 +15,6 @@ import { ProductosModule } from './productos/productos.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 import { OperadorPdvModule } from './operador-pdv/operador-pdv.module';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,4 +37,4 @@ import { OperadorPdvModule } from './operador-pdv/operador-pdv.module';
     // { provide: APP_GUARD, useClass: RolesGuard },   // 2) Autorización (roles)
   ],
 })
-export class AppModule { }
+export class AppModule {}

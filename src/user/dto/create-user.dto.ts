@@ -3,32 +3,38 @@ import {
   IsString,
   IsEmail,
   IsOptional,
-  IsInt,
-  Min,
   MinLength,
   IsEnum,
   Length,
   IsDateString,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../../shared/enums/roles/role.enum';
 
-// helper: null/'' -> undefined (por si viene vacío en peticiones)
+// helper: null/'' -> undefined
 const nullishToUndef = ({ value }: { value: any }) =>
   value === null || value === '' ? undefined : value;
 
 export class CreateUserDto {
   @ApiProperty({
-    description: 'Nombre completo del usuario',
-    example: 'Juan Pérez',
+    description: 'Nombre del usuario',
+    example: 'Juan',
     maxLength: 100,
   })
   @IsString()
   name: string;
 
   @ApiProperty({
-    description: 'Correo electrónico del usuario',
+    description: 'Apellido del usuario',
+    example: 'Pérez',
+    maxLength: 100,
+  })
+  @IsString()
+  lastName: string;
+
+  @ApiProperty({
+    description: 'Correo electrónico único del usuario',
     example: 'juan.perez@email.com',
   })
   @IsEmail()
@@ -41,7 +47,7 @@ export class CreateUserDto {
   })
   @IsString()
   @MinLength(8)
-  password: string;
+  password: string; // luego en el service se convierte a passwordHash
 
   @ApiPropertyOptional({
     description: 'Fecha de nacimiento (YYYY-MM-DD)',
@@ -55,45 +61,26 @@ export class CreateUserDto {
   birthDate?: string;
 
   @ApiProperty({
-    description: 'Rol del usuario',
-    enum: Role,
-    example: Role.Admin,
-  })
-  @IsEnum(Role)
-  role: Role;
-
-  @ApiProperty({
-    description: 'ID del tipo de documento',
-    example: 1,
-    type: Number,
-    minimum: 1,
-  })
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  documentTypeId: number;
-
-  @ApiProperty({
-    description: 'Número de documento',
-    example: '11564612',
-  })
-  @IsString()
-  @Length(4, 32) // entidad: length 32
-  documentNumber: string;
-
-  @ApiProperty({
-    description: 'Teléfono del usuario',
+    description: 'Teléfono de contacto',
     example: '+43123456789',
   })
   @IsString()
-  @Length(5, 32) // entidad: length 32
-  cellphone: string;
+  @Length(5, 32)
+  phone: string;
 
   @ApiProperty({
     description: 'Dirección del usuario',
     example: 'Calle 123 #45-67',
   })
   @IsString()
-  @Length(3, 160) // entidad: length 160
+  @Length(3, 160)
   address: string;
+
+  @ApiProperty({
+    description: 'Rol del usuario',
+    enum: Role,
+    example: Role.Admin,
+  })
+  @IsEnum(Role)
+  role: Role;
 }

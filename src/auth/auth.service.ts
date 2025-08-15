@@ -21,7 +21,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly usersService: UserService,
     @InjectPinoLogger(AuthService.name) private readonly logger: PinoLogger,
-  ) { }
+  ) {}
 
   /** Genera un traceId para correlación */
   private newTraceId(): string {
@@ -38,16 +38,21 @@ export class AuthService {
       // Obtiene la ENTIDAD con passwordHash (select:false en la entidad)
       const user = await this.usersService.findByEmail(dto.email, true);
 
-      if (!user || user.isActive === false) {
-        this.logger.warn({ traceId, email: dto.email }, 'Email no encontrado o inactivo');
+      if (!user || user.status === false) {
+        this.logger.warn(
+          { traceId, email: dto.email },
+          'Email no encontrado o inactivo',
+        );
         throw new UnauthorizedException({
           message: 'Credenciales inválidas',
           traceId,
         });
       }
 
-      const passwordHash: string = user.password;
-      const ok = passwordHash ? await bcrypt.compare(dto.password, passwordHash) : false;
+      const passwordHash: string = user.passwordHash;
+      const ok = passwordHash
+        ? await bcrypt.compare(dto.password, passwordHash)
+        : false;
 
       if (!ok) {
         this.logger.error({ traceId, userId: user.id }, 'Password inválida');
@@ -57,7 +62,7 @@ export class AuthService {
         });
       }
 
-      const role: Role = user.role ?? Role.User;
+      const role: string = user.role ?? Role.User;
       const payload = { sub: String(user.id), email: user.email, role };
 
       const access_token = await this.jwt.signAsync(payload, {
@@ -65,7 +70,10 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       });
 
-      this.logger.info({ traceId, userId: user.id, role }, 'Token emitido correctamente');
+      this.logger.info(
+        { traceId, userId: user.id, role },
+        'Token emitido correctamente',
+      );
 
       return {
         access_token,
@@ -74,18 +82,31 @@ export class AuthService {
       };
     } catch (err: any) {
       if (err?.getStatus) {
-        this.logger.warn({ traceId, err: err?.message }, 'Error controlado en login');
+        this.logger.warn(
+          { traceId, err: err?.message },
+          'Error controlado en login',
+        );
         throw err;
       }
       this.logger.error({ traceId, err }, 'Error no controlado en login');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 
   /** Construye el perfil desde el payload (sin errores esperables) */
-  profileFromPayload(payload: { sub: string; email: string; role: Role }): MeResponseDto {
+  profileFromPayload(payload: {
+    sub: string;
+    email: string;
+    role: Role;
+  }): MeResponseDto {
     const traceId = this.newTraceId();
-    this.logger.debug({ traceId, userId: payload.sub }, 'Construyendo perfil desde payload');
+    this.logger.debug(
+      { traceId, userId: payload.sub },
+      'Construyendo perfil desde payload',
+    );
     return { id: payload.sub, email: payload.email, role: payload.role };
   }
 
@@ -95,17 +116,28 @@ export class AuthService {
     this.logger.info({ traceId, role }, 'Emitir token DEV por rol');
 
     try {
-      const payload = { sub: 'dev-user-id', email: `dev+${role}@example.com`, role };
+      const payload = {
+        sub: 'dev-user-id',
+        email: `dev+${role}@example.com`,
+        role,
+      };
       const access_token = await this.jwt.signAsync(payload, {
         expiresIn: process.env.JWT_EXPIRES || '1d',
         secret: process.env.JWT_SECRET,
       });
 
       this.logger.info({ traceId, role }, 'Token DEV emitido');
-      return { access_token, token_type: 'Bearer', user: this.profileFromPayload(payload) };
+      return {
+        access_token,
+        token_type: 'Bearer',
+        user: this.profileFromPayload(payload),
+      };
     } catch (err: any) {
       this.logger.error({ traceId, err }, 'Fallo emitiendo token DEV');
-      throw new InternalServerErrorException({ message: 'Error interno del servidor', traceId });
+      throw new InternalServerErrorException({
+        message: 'Error interno del servidor',
+        traceId,
+      });
     }
   }
 }
