@@ -130,7 +130,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard, SelfOrAdminGuard)
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
-    return await this.userService.findOne(+id);
+    return await this.userService.findOne(id);
   }
 
   @ApiOperation({
@@ -146,7 +146,7 @@ export class UserController {
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return await this.userService.update(+id, updateUserDto);
+    return await this.userService.update(id, updateUserDto);
   }
 
   @ApiOperation({
@@ -159,6 +159,6 @@ export class UserController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
-    await this.userService.remove(+id);
+    await this.userService.remove(id);
   }
 }
