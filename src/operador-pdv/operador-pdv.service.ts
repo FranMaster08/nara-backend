@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PinoLogger } from 'nestjs-pino';
 import { randomUUID } from 'crypto';
 
@@ -14,7 +14,7 @@ import { CreateOperadorPdvDto } from './dto/create-operador-pdv.dto';
 import { UpdateOperadorPdvDto } from './dto/update-operador-pdv.dto';
 import { OperadorPdv } from './entities/operador-pdv.entity';
 
-// (opcional) mover esto a src/operador-pdv/dto-response/operador-pdv-response.dto.ts
+// (opcional) muévelo a dto-response/operador-pdv-response.dto.ts
 class OperadorPdvResponseDto {
   operadorId!: string;
   puntoVentaId!: string;
@@ -35,7 +35,6 @@ class OperadorPdvListQueryDto {
 @Injectable()
 export class OperadorPdvService {
   constructor(
-    private readonly dataSource: DataSource,
     @InjectRepository(OperadorPdv)
     private readonly repo: Repository<OperadorPdv>,
     private readonly logger: PinoLogger,
@@ -48,26 +47,24 @@ export class OperadorPdvService {
   }
 
   private toDto(row: OperadorPdv): OperadorPdvResponseDto {
-    const r = row as any;
     return {
-      operadorId: r.operadorId ?? r.operador_id ?? (r.operador?.id ?? ''),
-      puntoVentaId: r.puntoVentaId ?? r.punto_venta_id ?? (r.puntoVenta?.id ?? ''),
-      assignedAt: r.assigned_at ?? r.assignedAt,
-      enabled: !!r.enabled,
+      operadorId: row.operadorId,
+      puntoVentaId: row.puntoVentaId,
+      assignedAt: row.assignedAt,
+      enabled: row.enabled,
     };
   }
 
   async create(dto: CreateOperadorPdvDto): Promise<OperadorPdvResponseDto> {
     const traceId = this.newTraceId();
-    const { operadorId, puntoVentaId, enabled = true } = dto as any;
+    const { operadorId, puntoVentaId, enabled = true } = dto;
 
     this.logger.info({ traceId, operadorId, puntoVentaId }, 'Create operador_pdv: attempt');
 
     try {
-      // Si tu Entity define relaciones, puedes setear como objetos { id }
       const entity = this.repo.create({
-        operador: { id: operadorId } as any,
-        puntoVenta: { id: puntoVentaId } as any,
+        operadorId,
+        puntoVentaId,
         enabled,
       } as Partial<OperadorPdv>);
 
@@ -95,27 +92,22 @@ export class OperadorPdvService {
     const traceId = this.newTraceId();
     this.logger.info({ traceId, count: dtos?.length ?? 0 }, 'CreateMany operador_pdv: attempt');
 
-    const qr = this.dataSource.createQueryRunner();
-    await qr.connect();
-    await qr.startTransaction();
-
     try {
-      const repo = qr.manager.getRepository(OperadorPdv);
-      const entities = dtos.map((d: any) =>
-        repo.create({
-          operador: { id: d.operadorId } as any,
-          puntoVenta: { id: d.puntoVentaId } as any,
-          enabled: d.enabled ?? true,
-        } as Partial<OperadorPdv>),
-      );
-
-      const saved = await repo.save(entities);
-      await qr.commitTransaction();
+      const saved = await this.repo.manager.transaction(async (m) => {
+        const r = m.getRepository(OperadorPdv);
+        const entities = dtos.map((d) =>
+          r.create({
+            operadorId: d.operadorId,
+            puntoVentaId: d.puntoVentaId,
+            enabled: d.enabled ?? true,
+          } as Partial<OperadorPdv>),
+        );
+        return await r.save(entities);
+      });
 
       this.logger.info({ traceId, count: saved.length }, 'CreateMany operador_pdv: success');
       return saved.map((s) => this.toDto(s));
     } catch (err: any) {
-      await qr.rollbackTransaction();
       if (err?.code === '23505') {
         this.logger.warn({ traceId, err: err?.detail }, 'CreateMany operador_pdv: conflict');
         throw new ConflictException({
@@ -128,8 +120,6 @@ export class OperadorPdvService {
         message: 'Error interno del servidor',
         traceId,
       });
-    } finally {
-      await qr.release();
     }
   }
 
@@ -151,26 +141,25 @@ export class OperadorPdvService {
     );
 
     try {
-      const qb = this.repo.createQueryBuilder('op')
-        .leftJoin('op.operador', 'u')
-        .leftJoin('op.puntoVenta', 'pv');
+      // where dinámico sin joins
+      const where: any = {};
+      if (operadorId) where.operadorId = operadorId;
+      if (puntoVentaId) where.puntoVentaId = puntoVentaId;
+      if (typeof enabled === 'boolean') where.enabled = enabled;
 
-      if (operadorId) qb.andWhere('u.id = :operadorId', { operadorId });
-      if (puntoVentaId) qb.andWhere('pv.id = :puntoVentaId', { puntoVentaId });
-      if (typeof enabled === 'boolean') qb.andWhere('op.enabled = :enabled', { enabled });
-
-      // Campos de orden soportados
-      let orderExpr = 'op.assigned_at';
-      if (sortBy === 'operadorId') orderExpr = 'u.id';
-      else if (sortBy === 'puntoVentaId') orderExpr = 'pv.id';
-      else if (sortBy === 'enabled') orderExpr = 'op.enabled';
-
+      // ordenar por propiedad del entity (camelCase)
+      const orderMap: Record<string, 'ASC' | 'DESC'> = {};
       const dir = order === 'ASC' ? 'ASC' : 'DESC';
-      qb.orderBy(orderExpr, dir as 'ASC' | 'DESC');
+      const sortable = new Set(['assignedAt', 'operadorId', 'puntoVentaId', 'enabled']);
+      const field = sortable.has(sortBy) ? sortBy : 'assignedAt';
+      orderMap[field] = dir;
 
-      qb.skip((page - 1) * limit).take(limit);
-
-      const rows = await qb.getMany();
+      const rows = await this.repo.find({
+        where,
+        order: orderMap,
+        skip: (page - 1) * limit,
+        take: limit,
+      });
 
       this.logger.info({ traceId, count: rows.length }, 'Find operador_pdv: success');
       return rows.map((r) => this.toDto(r));
@@ -189,11 +178,7 @@ export class OperadorPdvService {
 
     try {
       const row = await this.repo.findOne({
-        where: {
-          operador: { id: operadorId } as any,
-          puntoVenta: { id: puntoVentaId } as any,
-        } as any,
-        relations: { operador: true, puntoVenta: true },
+        where: { operadorId, puntoVentaId },
       });
 
       if (!row) {
@@ -222,14 +207,7 @@ export class OperadorPdvService {
     this.logger.info({ traceId, operadorId, puntoVentaId, fields: Object.keys(dto ?? {}) }, 'Update operador_pdv: attempt');
 
     try {
-      const row = await this.repo.findOne({
-        where: {
-          operador: { id: operadorId } as any,
-          puntoVenta: { id: puntoVentaId } as any,
-        } as any,
-        relations: { operador: true, puntoVenta: true },
-      });
-
+      const row = await this.repo.findOne({ where: { operadorId, puntoVentaId } });
       if (!row) {
         this.logger.warn({ traceId, operadorId, puntoVentaId }, 'Update operador_pdv: not found');
         throw new NotFoundException({
@@ -238,13 +216,12 @@ export class OperadorPdvService {
         });
       }
 
-      if (dto.enabled !== undefined) (row as any).enabled = dto.enabled;
-      // Si decides permitir mover a otro pdv/operador, aquí habría que manejar PK compuesta con transacción.
+      if (dto.enabled !== undefined) row.enabled = dto.enabled;
 
-      await this.repo.save(row);
+      const saved = await this.repo.save(row);
 
       this.logger.info({ traceId, operadorId, puntoVentaId }, 'Update operador_pdv: success');
-      return this.toDto(row);
+      return this.toDto(saved);
     } catch (err: any) {
       if (err?.code === '23505') {
         this.logger.warn({ traceId, err: err?.detail }, 'Update operador_pdv: conflict');
@@ -261,13 +238,7 @@ export class OperadorPdvService {
     this.logger.info({ traceId, operadorId, puntoVentaId }, 'Remove operador_pdv: attempt');
 
     try {
-      const row = await this.repo.findOne({
-        where: {
-          operador: { id: operadorId } as any,
-          puntoVenta: { id: puntoVentaId } as any,
-        } as any,
-      });
-
+      const row = await this.repo.findOne({ where: { operadorId, puntoVentaId } });
       if (!row) {
         this.logger.warn({ traceId, operadorId, puntoVentaId }, 'Remove operador_pdv: not found');
         throw new NotFoundException({
