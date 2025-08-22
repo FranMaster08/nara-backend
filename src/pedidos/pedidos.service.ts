@@ -101,7 +101,7 @@ export class PedidosService {
         notas: dto.notas ?? null,
         status: dto.status ?? true,
         createBy: dto.createBy,
-        user: dto.userId ? ({ id: dto.userId } as any) : null,
+        userId: dto.userId,
         puntoVenta: dto.puntoVentaId ? ({ id: dto.puntoVentaId } as any) : null,
       } as any);
 

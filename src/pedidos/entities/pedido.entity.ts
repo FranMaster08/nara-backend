@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { LineaPedido } from './linea-pedido.entity';
 
@@ -23,7 +24,11 @@ export class Pedido {
   @Column('text')
   codigo: string;
 
+  @Column('text', { name: 'user_id' })
+  userId: string;
+
   @ManyToOne(() => Users, (u) => u.pedidos, { eager: false })
+  @JoinColumn({ name: 'user_id' })
   user: Users;
 
   @ManyToOne(() => PuntoVenta, (pv) => pv.pedidos, { eager: false })
