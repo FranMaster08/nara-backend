@@ -17,8 +17,8 @@ export class ProductoResponseDto {
     status!: boolean;
 
     @ApiProperty({ example: '2025-08-15T16:20:00.000Z' })
-    createdAt!: string;
+    createdAt!: Date;
 
     @ApiProperty({ example: '2025-08-15T16:20:00.000Z' })
-    updatedAt!: string;
+    updatedAt!: Date;
 }

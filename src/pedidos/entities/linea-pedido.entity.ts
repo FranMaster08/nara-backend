@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, ManyToOne, Index } from 'typeorm';
+import { Column, Entity, PrimaryColumn, ManyToOne, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Pedido } from './pedido.entity';
 import { Producto } from '../../productos/entities/producto.entity';
 
@@ -22,4 +22,20 @@ export class LineaPedido {
 
   @Column('numeric', { nullable: true })
   subtotal_snapshot?: string;
+
+  // ✅ se fija en el momento del INSERT
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamptz',        // guarda fecha + hora con zona horaria
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
+
+  // ✅ se actualiza automáticamente en cada UPDATE
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }

@@ -15,15 +15,6 @@ const nullishToUndef = ({ value }: { value: any }) =>
 
 const DECIMAL_RE = /^(?:\d+)(?:\.\d+)?$/;
 export class CreateProductoDto {
-    @ApiProperty({
-        description: 'Identificador del producto (UUID o similar)',
-        example: 'e8b8c2e0-2b8f-4bff-923f-1d6d1a4b7a99',
-        maxLength: 100,
-    })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(100)
-    id!: string;
 
     @ApiProperty({
         description: 'Nombre del producto',

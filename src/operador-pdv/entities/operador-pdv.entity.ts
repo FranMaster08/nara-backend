@@ -1,5 +1,5 @@
 // src/operador-pdv/entities/operador-pdv.entity.ts
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { Users } from '../../user/entities/user.entity';
 import { PuntoVenta } from 'src/puntos-venta/entities/puntos-venta.entity';
 
@@ -24,4 +24,20 @@ export class OperadorPdv {
 
   @Column({ type: 'boolean' })
   enabled: boolean;
+
+  // ✅ se fija en el momento del INSERT
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamptz',        // guarda fecha + hora con zona horaria
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
+
+  // ✅ se actualiza automáticamente en cada UPDATE
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }

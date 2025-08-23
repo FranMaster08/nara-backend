@@ -9,6 +9,8 @@ import {
   OneToMany,
   Index,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { LineaPedido } from './linea-pedido.entity';
 
@@ -42,12 +44,21 @@ export class Pedido {
 
   @Column({ type: 'boolean', default: true })
   status: boolean;
+  // ✅ se fija en el momento del INSERT
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamptz',        // guarda fecha + hora con zona horaria
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
 
-  @Column({ name: 'created_at', type: 'text', default: 'NOW' })
-  createdAt: string;
-
-  @Column({ name: 'updated_at', type: 'text', default: 'NOW' })
-  updatedAt: string;
+  // ✅ se actualiza automáticamente en cada UPDATE
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
   @Column({ name: 'create_by', type: 'text' })
   createBy: string;

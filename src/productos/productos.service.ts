@@ -42,7 +42,7 @@ export class ProductosService {
 
   async create(dto: CreateProductoDto): Promise<ProductoResponseDto> {
     const traceId = this.newTraceId();
-    this.logger.info({ traceId, id: dto.id, sku: dto.sku }, 'Create producto: attempt');
+    this.logger.info({ traceId, nombre: dto.nombre, sku: dto.sku }, 'Create producto: attempt');
 
     try {
       const entity = this.productoRepo.create({
