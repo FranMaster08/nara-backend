@@ -11,6 +11,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { LineaPedido } from './linea-pedido.entity';
 
@@ -20,8 +21,9 @@ import { LineaPedido } from './linea-pedido.entity';
 @Index('pedidos_idx_pedidos_estado', ['estado'])
 @Index('pedidos_idx_pedidos_created_at', ['createdAt'])
 export class Pedido {
-  @PrimaryColumn('text')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
+
 
   @Column('text')
   codigo: string;
@@ -33,7 +35,13 @@ export class Pedido {
   @JoinColumn({ name: 'user_id' })
   user: Users;
 
+
+  @Column('text', { name: 'punto_venta_id' })
+  puntoVentaId: string;
+
+
   @ManyToOne(() => PuntoVenta, (pv) => pv.pedidos, { eager: false })
+  @JoinColumn({ name: 'punto_venta_id' })
   puntoVenta: PuntoVenta;
 
   @Column('text')

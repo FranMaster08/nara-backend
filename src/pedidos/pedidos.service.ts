@@ -45,7 +45,7 @@ export class PedidosService {
       createBy: (p as any).createBy,
       userId: (p as any).userId ?? null,
       puntoVentaId: (p as any).puntoVentaId ?? null,
-      lineas: (p.lineas ?? []).map((l) => ({
+      lineas: (p.lineas).map((l) => ({
         id: l.id,
         productoId: (l as any).productoId!,
         cantidad: l.cantidad,
@@ -95,14 +95,13 @@ export class PedidosService {
       const precios = await this.fetchPreciosProducto(productoIds, traceId);
 
       const pedido = qr.manager.getRepository(Pedido).create({
-        id: randomUUID(),
         codigo: dto.codigo,
         estado: dto.estado,
         notas: dto.notas ?? null,
         status: dto.status ?? true,
         createBy: dto.createBy,
         user: dto.userId ? ({ id: dto.userId } as any) : null,
-        puntoVenta: dto.puntoVentaId ? ({ id: dto.puntoVentaId } as any) : null,
+        puntoVenta: { id: dto.puntoVentaId } ,
       } );
 
       await qr.manager.getRepository(Pedido).save(pedido);
@@ -115,8 +114,8 @@ export class PedidosService {
           cantidad: l.cantidad,
           precio_unitario_snapshot: precio,
           subtotal_snapshot: subtotal,
-          pedido: { id: pedido[0].id } as any,
-          producto: { id: l.productoId } as any,
+          pedido: { id: pedido.id },
+          producto: { id: l.productoId } ,
         });
       });
 
@@ -127,7 +126,7 @@ export class PedidosService {
       await qr.commitTransaction();
 
       const withLines = await this.pedidoRepo.findOne({
-        where: { id: pedido[0].id },
+        where: { id: pedido.id },
         relations: { lineas: true },
       });
 
