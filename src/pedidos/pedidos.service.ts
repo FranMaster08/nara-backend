@@ -101,9 +101,9 @@ export class PedidosService {
         notas: dto.notas ?? null,
         status: dto.status ?? true,
         createBy: dto.createBy,
-        userId: dto.userId,
+        user: dto.userId ? ({ id: dto.userId } as any) : null,
         puntoVenta: dto.puntoVentaId ? ({ id: dto.puntoVentaId } as any) : null,
-      } as any);
+      } );
 
       await qr.manager.getRepository(Pedido).save(pedido);
 
@@ -117,11 +117,11 @@ export class PedidosService {
           subtotal_snapshot: subtotal,
           pedido: { id: pedido[0].id } as any,
           producto: { id: l.productoId } as any,
-        } as any);
+        });
       });
 
       if (lineas.length) {
-        await qr.manager.getRepository(LineaPedido).save(lineas[0]); // 👈 guarda TODAS
+        await qr.manager.getRepository(LineaPedido).save(lineas); // 👈 guarda TODAS
       }
 
       await qr.commitTransaction();
@@ -131,7 +131,7 @@ export class PedidosService {
         relations: { lineas: true },
       });
 
-      this.logger.info({ traceId, id: pedido[0].id }, 'Create pedido: success');
+      this.logger.info({ traceId, id: pedido.id }, 'Create pedido: success');
       return this.toDto(withLines!);
     } catch (err: any) {
       await qr.rollbackTransaction();
